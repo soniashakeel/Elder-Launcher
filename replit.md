@@ -1,6 +1,6 @@
-# [Project name]
+# ELDER LAUNCHER
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An Android Studio fork of PojavLauncher with a Compose-based dark neon launcher UI for Minecraft Java and installed Bedrock.
 
 ## Run & Operate
 
@@ -10,6 +10,7 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
+- Open `android/` in Android Studio and build the `MainApp` debug configuration.
 
 ## Stack
 
@@ -19,26 +20,33 @@ _Replace the heading above with the project's name, and this line with one sente
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
+- Android: Kotlin, Jetpack Compose Material 3, Room, Android SAF, Pojav JRE/LWJGL/native OpenGL bridge
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `android/app_pojavlauncher` — MainApp and Compose UI
+- `android/core` — Core Android library boundary
+- `android/jre_lwjgl3glfw` — JRE module
+- `android/app_pojavlauncher/src/main/jni` and `jniLibs` — OpenGL/native bridge
+- `android/app_pojavlauncher/src/main/java/com/elder/launcher` — ELDER UI, Room instance store, Mojang metadata client
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Keep Pojav's upstream Java/native launch pipeline intact; the Compose shell routes into it for account, download, mod-loader, touch-control, and game-launch behavior.
+- Use applicationId `com.elder.launcher` while retaining Pojav's source namespace so the upstream resource and native bridge references remain compatible.
+- Persist launcher instances with Room; persist the Bedrock tree URI with Android SAF permissions.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+ELDER LAUNCHER provides Home, Instances, Library, Tools, and Account screens with a dark `#0A0A0A` surface, neon `#00FF66` accent, Compose Material 3 components, Minecraft Java launch/auth/install actions, live Mojang version metadata, a Room-backed instance list, RAM controls, touch-control entry points, and installed Bedrock launching.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+The user requested the attached ELDER LAUNCHER visual identity: dark black surfaces, neon green accents, blue EL icon, and a Minecraft-focused mobile launcher experience.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+The Android SDK is not installed in the current Replit shell, so APK compilation must be run from Android Studio or another Android SDK-equipped environment.
 
 ## Pointers
 

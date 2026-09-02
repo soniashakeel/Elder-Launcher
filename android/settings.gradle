@@ -1,0 +1,27 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+    }
+}
+
+rootProject.name='ElderLauncher'
+include ':MainApp'
+project(':MainApp').projectDir = file('app_pojavlauncher')
+include ':JRE'
+project(':JRE').projectDir = file('jre_lwjgl3glfw')
+include ':Core'
+project(':Core').projectDir = file('core')
+include ':OpenGL'
+project(':OpenGL').projectDir = file('opengl')
+include ':arc_dns_injector'
+include ':forge_installer'

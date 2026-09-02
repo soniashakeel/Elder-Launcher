@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.lwjgl.glfw'
+
+configurations.default.setCanBeResolved(true)
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveBaseName = "lwjgl-glfw-classes"
+    destinationDirectory.set(file("../app_pojavlauncher/src/main/assets/components/lwjgl3/"))
+    if (gitUsed()){
+      File versionFile = file("../app_pojavlauncher/src/main/assets/components/lwjgl3/version")
+      // The Android Studio module is exposed as :JRE, but the upstream
+      // directory is still app-resolved as jre_lwjgl3glfw in git.
+      versionFile.write(getGitHash("jre_lwjgl3glfw"))
+    }
+    from {
+        configurations.default.collect {
+            println(it.getName())
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    exclude 'net/java/openjdk/cacio/ctc/**'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
