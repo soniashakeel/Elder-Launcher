@@ -20,6 +20,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
 
     <application
         android:name=".PojavApplication"
@@ -29,7 +30,7 @@
         android:hasFragileUserData="true"
         android:icon="@drawable/ic_elder_launcher"
         android:isGame="true"
-        android:label="ELDER LAUNCHER"
+        android:label="ELDER LAUNCHER BETA"
         android:process=":launcher"
         android:resizeableActivity="true"
         android:roundIcon="@drawable/ic_elder_launcher"
@@ -45,7 +46,7 @@
         <activity
             android:name="com.elder.launcher.ElderLauncherActivity"
             android:exported="true"
-            android:label="ELDER LAUNCHER"
+            android:label="ELDER LAUNCHER BETA"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -58,7 +59,7 @@
             android:exported="false" />
         <activity
             android:name=".LauncherActivity"
-            android:label="ELDER LAUNCHER"
+            android:label="ELDER LAUNCHER BETA"
             android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".ImportControlActivity"

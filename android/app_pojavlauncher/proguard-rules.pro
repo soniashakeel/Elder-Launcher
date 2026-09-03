@@ -24,4 +24,9 @@
 # Option screens
  -keep class net.kdt.pojavlaunch.prefs.screens** {*;}
 
+ # Room's generated database implementation is referenced from annotations.
+ -keep class com.elder.launcher.data.** { *; }
+ -keep class com.elder.launcher.net.** { *; }
+ # Pojav's bundled Java desktop compatibility layer is accessed by name.
+ -keep class java.awt.** { *; }
 

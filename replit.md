@@ -10,7 +10,7 @@ An Android Studio fork of PojavLauncher with a Compose-based dark neon launcher 
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
-- Open `android/` in Android Studio and build the `MainApp` debug configuration.
+- Open `android/` in Android Studio and build the `MainApp` release configuration for the optimized beta.
 
 ## Stack
 
@@ -38,7 +38,7 @@ An Android Studio fork of PojavLauncher with a Compose-based dark neon launcher 
 
 ## Product
 
-ELDER LAUNCHER provides Home, Instances, Library, Tools, and Account screens with a dark `#0A0A0A` surface, neon `#00FF66` accent, Compose Material 3 components, Minecraft Java launch/auth/install actions, live Mojang version metadata, a Room-backed instance list, RAM controls, touch-control entry points, and installed Bedrock launching.
+ELDER LAUNCHER BETA 0.1.0 provides Home, Instances, Library, Tools, and Account screens with a dark `#0A0A0A` surface, neon `#00FF66` accent, Compose Material 3 components, Minecraft Java launch/auth/install actions, live Mojang version metadata, a Room-backed instance list, low-end performance presets, a Modrinth FPS Boost installer, RAM controls, touch-control presets, feedback sharing, crash logging, and installed Bedrock launching.
 
 ## User preferences
 
@@ -46,7 +46,7 @@ The user requested the attached ELDER LAUNCHER visual identity: dark black surfa
 
 ## Gotchas
 
-The Android SDK is not installed in the current Replit shell, so APK compilation must be run from Android Studio or another Android SDK-equipped environment.
+Android targets API 34 with min API 24. Release uses R8/resource shrinking and ABI splits; the Android SDK is not installed in the current Replit shell, so APK compilation must be run from Android Studio or another Android SDK-equipped environment.
 
 ## Pointers
 

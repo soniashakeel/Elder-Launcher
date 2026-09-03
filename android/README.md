@@ -1,4 +1,4 @@
-<h1 align="center">ELDER LAUNCHER</h1>
+<h1 align="center">ELDER LAUNCHER BETA</h1>
 
 <img src="https://github.com/PojavLauncherTeam/PojavLauncher/blob/v3_openjdk/app_pojavlauncher/src/main/assets/pojavlauncher.png" align="left" width="130" height="150" alt="PojavLauncher logo">
 
@@ -10,7 +10,9 @@
 
 *From [Boardwalk](https://github.com/zhuowei/Boardwalk)'s ashes here comes PojavLauncher!*
 
-ELDER LAUNCHER is a dark, neon-green Minecraft launcher for Android. It keeps Pojav's proven Java runtime, LWJGL, OpenGL bridge, Microsoft authentication, version downloads, mod installers, and touch-control editor behind a new Compose-first launcher experience.
+ELDER LAUNCHER BETA 0.1.0 is a low-end focused Minecraft launcher for Android. It keeps Pojav's proven Java runtime, LWJGL, OpenGL bridge, Microsoft authentication, version downloads, mod installers, and touch-control editor behind a Compose-first launcher experience.
+
+The beta targets Android 7.0+ (API 24) and provides a per-ABI release APK with R8/resource shrinking enabled. The recommended low-end profile uses 768 MB RAM, an approximately 960x540 render target, GL4ES/Fast graphics, reduced view distance, and G1GC.
 
 The runtime foundation is forked from PojavLauncherTeam/PojavLauncher and remains under its upstream license.
 
@@ -68,9 +70,9 @@ You can get PojavLauncher via three methods:
 The easiest way to build PojavLauncher is to use the pre-built JREs provided by our CI.
 
 1. Open the `android/` directory in Android Studio.
-2. Build the launcher: `./gradlew :MainApp:assembleDebug` (Use `gradlew.bat` on Windows)
+2. Build the optimized beta: `./gradlew :MainApp:assembleRelease` (Use `gradlew.bat` on Windows)
 
-The built APK will be located in `app_pojavlauncher/build/outputs/apk/debug/`.
+The built APKs will be located in `app_pojavlauncher/build/outputs/apk/release/`.
 
 ### Detailed Build
 

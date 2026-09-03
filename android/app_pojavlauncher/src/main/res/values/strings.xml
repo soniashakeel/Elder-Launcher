@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- App name part -->
-    <string name="app_name">ELDER LAUNCHER</string>
-    <string name="app_short_name">ELDER LAUNCHER</string>
+    <string name="app_name">ELDER LAUNCHER BETA</string>
+    <string name="app_short_name">ELDER LAUNCHER BETA</string>
 
     <!-- Action bar part -->
 

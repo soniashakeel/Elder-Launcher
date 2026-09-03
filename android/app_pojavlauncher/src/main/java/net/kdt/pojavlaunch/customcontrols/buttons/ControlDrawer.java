@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import net.kdt.pojavlaunch.Tools;
+import com.elder.launcher.ElderPerformance;
 import net.kdt.pojavlaunch.customcontrols.ControlData;
 import net.kdt.pojavlaunch.customcontrols.ControlDrawerData;
 import net.kdt.pojavlaunch.customcontrols.ControlLayout;
@@ -31,7 +32,8 @@ public class ControlDrawer extends ControlButton {
         buttons = new ArrayList<>(drawerData.buttonProperties.size());
         this.parentLayout = layout;
         this.drawerData = drawerData;
-        areButtonsVisible = layout.getModifiable();
+        areButtonsVisible = layout.getModifiable()
+                || !ElderPerformance.isTouchAutoHideEnabled(layout.getContext());
     }
 
 

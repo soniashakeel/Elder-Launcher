@@ -36,8 +36,10 @@ public class LauncherPreferenceJavaFragment extends LauncherPreferenceFragment {
         int deviceRam = getTotalDeviceMemory(memorySeekbar.getContext());
 
         if(is32BitsDevice() || deviceRam < 2048) maxRAM = Math.min(1024, deviceRam);
-        else maxRAM = deviceRam - (deviceRam < 3064 ? 800 : 1024); //To have a minimum for the device to breathe
+        else maxRAM = Math.min(LauncherPreferences.MAX_RAM_ALLOCATION,
+                deviceRam - (deviceRam < 3064 ? 800 : 1024)); // Keep headroom on small devices
 
+        maxRAM = Math.max(LauncherPreferences.DEFAULT_RAM_ALLOCATION, maxRAM);
         memorySeekbar.setMaxKeepIncrement(maxRAM);
         memorySeekbar.setValue(ramAllocation);
         memorySeekbar.setSuffix(" MB");

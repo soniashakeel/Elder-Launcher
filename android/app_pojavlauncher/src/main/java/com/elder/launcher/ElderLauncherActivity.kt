@@ -10,6 +10,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -34,9 +36,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Extension
@@ -53,11 +58,13 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -94,14 +101,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.elder.launcher.data.ElderDatabase
 import com.elder.launcher.data.InstanceEntity
 import com.elder.launcher.net.MinecraftVersion
 import com.elder.launcher.net.MojangApi
 import kotlinx.coroutines.launch
 import net.kdt.pojavlaunch.LauncherActivity
-import net.kdt.pojavlaunch.Tools
-import net.kdt.pojavlaunch.prefs.LauncherPreferences
+import kotlin.math.roundToInt
 
 private val ElderBlack = Color(0xFF0A0A0A)
 private val ElderPanel = Color(0xFF111614)
@@ -127,6 +134,7 @@ class ElderLauncherActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ElderPerformance.initialize(this)
         window.statusBarColor = AndroidColor.rgb(10, 10, 10)
         window.navigationBarColor = AndroidColor.rgb(10, 10, 10)
         setContent {
@@ -140,6 +148,16 @@ class ElderLauncherActivity : ComponentActivity() {
                     onLaunchBedrock = {
                         val bedrock = packageManager.getLaunchIntentForPackage("com.mojang.minecraftpe")
                         if (bedrock != null) startActivity(bedrock) else bedrockTree.launch(null)
+                    },
+                    onSendFeedback = {
+                        startActivity(Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_SUBJECT, "ELDER LAUNCHER BETA 0.1.0 feedback")
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                "ELDER LAUNCHER BETA 0.1.0\n\nPlease describe what happened:"
+                            )
+                        }.let { Intent.createChooser(it, "Send feedback") })
                     },
                     onOpenAndroidSettings = {
                         startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -184,6 +202,7 @@ private fun ElderApp(
     onOfflineLogin: () -> Unit,
     onChooseBedrockFolder: () -> Unit,
     onLaunchBedrock: () -> Unit,
+    onSendFeedback: () -> Unit,
     onOpenAndroidSettings: () -> Unit
 ) {
     val navItems = listOf(
@@ -224,7 +243,13 @@ private fun ElderApp(
             AnimatedContent(
                 targetState = selected,
                 modifier = Modifier.weight(1f),
-                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                transitionSpec = {
+                    if (ElderPerformance.isLowEndMode(context)) {
+                        EnterTransition.None togetherWith ExitTransition.None
+                    } else {
+                        fadeIn() togetherWith fadeOut()
+                    }
+                },
                 label = "screen"
             ) { tab ->
                 when (tab) {
@@ -246,7 +271,7 @@ private fun ElderApp(
                     )
                     2 -> LibraryScreen(onOpenPojav)
                     3 -> ToolsScreen(onOpenPojav)
-                    else -> AccountScreen(onMicrosoftLogin, onOfflineLogin, onOpenAndroidSettings)
+                    else -> AccountScreen(onMicrosoftLogin, onOfflineLogin, onSendFeedback, onOpenAndroidSettings)
                 }
             }
             NavigationBar(
@@ -322,8 +347,11 @@ private fun HomeScreen(
                     Text("LAUNCHER", color = ElderText, fontSize = 10.sp, letterSpacing = 4.sp)
                 }
             }
-            IconButton(onClick = onOpenPojav) {
-                Icon(Icons.Default.Settings, "Settings", tint = ElderMuted)
+            Column(horizontalAlignment = Alignment.End) {
+                Text("BETA v0.1.0", color = ElderGreen, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                IconButton(onClick = onOpenPojav) {
+                    Icon(Icons.Default.Settings, "Settings", tint = ElderMuted)
+                }
             }
         }
         HeroBanner(onPlayJava)
@@ -522,24 +550,29 @@ private fun FeatureItem(icon: ImageVector, label: String) {
 
 @Composable
 private fun InstancesScreen(instances: List<InstanceEntity>, onPlay: () -> Unit, onAdd: () -> Unit) {
-    ScreenColumn {
-        Header(
-            "INSTANCES",
-            "${instances.size} worlds ready",
-            action = {
-                Button(
-                    onClick = onAdd,
-                    colors = ButtonDefaults.buttonColors(containerColor = ElderGreen, contentColor = ElderBlack),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = ButtonDefaults.ContentPadding
-                ) {
-                    Text("+ NEW", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        item {
+            Header(
+                "INSTANCES",
+                "${instances.size} worlds ready",
+                action = {
+                    Button(
+                        onClick = onAdd,
+                        colors = ButtonDefaults.buttonColors(containerColor = ElderGreen, contentColor = ElderBlack),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = ButtonDefaults.ContentPadding
+                    ) {
+                        Text("+ NEW", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
-            }
-        )
-        FilterPills()
-        instances.forEachIndexed { index, instance ->
-            InstanceCard(instance, index, onPlay)
+            )
+        }
+        item { FilterPills() }
+        items(instances, key = { "${it.id}-${it.name}" }) { instance ->
+            InstanceCard(instance, instance.id, onPlay)
         }
     }
 }
@@ -623,20 +656,25 @@ private fun LibraryScreen(onOpenPojav: () -> Unit) {
         error?.let { Text(it, color = Color(0xFFFF8A80), fontSize = 12.sp) }
         if (versions.isNotEmpty()) {
             Text("MOJANG RELEASES", color = ElderGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            versions.take(12).forEach { version ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.MenuBook, null, tint = ElderGreen, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(10.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(version.id, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        Text("${version.type} • ${version.releaseDate}", color = ElderMuted, fontSize = 10.sp)
+            LazyColumn(
+                modifier = Modifier.height(300.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                items(versions.take(12), key = { it.id }) { version ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.MenuBook, null, tint = ElderGreen, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(version.id, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text("${version.type} • ${version.releaseDate}", color = ElderMuted, fontSize = 10.sp)
+                        }
+                        Text("INSTALL", color = ElderGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
-                    Text("INSTALL", color = ElderGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Divider(color = ElderPanelElevated)
                 }
-                Divider(color = ElderPanelElevated)
             }
         } else {
             Text("Tap refresh to load the live Mojang manifest.", color = ElderMuted, fontSize = 12.sp)
@@ -666,17 +704,82 @@ private fun LibraryAction(title: String, subtitle: String, icon: ImageVector, on
 @Composable
 private fun ToolsScreen(onOpenPojav: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val maxRamMb = remember {
-        (Tools.getTotalDeviceMemory(context) - 1024).coerceAtLeast(2048)
+    val maxRamMb = ElderPerformance.MAX_RAM_MB
+    val scope = rememberCoroutineScope()
+    var ram by rememberSaveable { mutableFloatStateOf(ElderPerformance.currentRam(context).toFloat()) }
+    var lowEndMode by rememberSaveable { mutableStateOf(ElderPerformance.isLowEndMode(context)) }
+    var fpsBoost by rememberSaveable { mutableStateOf(ElderPerformance.isFpsBoostEnabled(context)) }
+    var touchPreset by rememberSaveable { mutableStateOf(ElderPerformance.isTouchPresetEnabled(context)) }
+    var installingMods by remember { mutableStateOf(false) }
+    var modStatus by remember { mutableStateOf<String?>(null) }
+
+    fun installMods() {
+        installingMods = true
+        modStatus = null
+        scope.launch {
+            runCatching { ModrinthApi.installRecommendedMods("1.16.5") }
+                .onSuccess { installed ->
+                    modStatus = if (installed.isEmpty()) {
+                        "No compatible Fabric mod files were found."
+                    } else {
+                        "Installed: ${installed.joinToString(", ")}"
+                    }
+                }
+                .onFailure { modStatus = "Mod install failed: ${it.message ?: "network error"}" }
+            installingMods = false
+        }
     }
-    var ram by rememberSaveable {
-        mutableFloatStateOf(
-            LauncherPreferences.PREF_RAM_ALLOCATION.coerceIn(1024, maxRamMb).toFloat()
-        )
-    }
-    var touchMode by rememberSaveable { mutableStateOf(true) }
+
     ScreenColumn {
-        Header("TOOLS", "Tune the launcher for your device")
+        Header("TOOLS", "Performance controls for low-end devices")
+        Card(colors = CardDefaults.cardColors(containerColor = ElderPanel), shape = RoundedCornerShape(12.dp)) {
+            Column(modifier = Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Speed, null, tint = ElderGreen)
+                    Spacer(Modifier.width(10.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("PERFORMANCE", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Apply safe settings for 3 GB phones", color = ElderMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = lowEndMode,
+                        onCheckedChange = {
+                            lowEndMode = it
+                            ElderPerformance.setLowEndMode(context, it)
+                            ram = ElderPerformance.currentRam(context).toFloat()
+                        },
+                        colors = androidx.compose.material3.SwitchDefaults.colors(
+                            checkedThumbColor = ElderBlack,
+                            checkedTrackColor = ElderGreen
+                        )
+                    )
+                }
+                if (lowEndMode) {
+                    Text(
+                        "LOW-END MODE ON • 768 MB • 960×540 • Fast graphics • no UI transitions",
+                        color = ElderGreen,
+                        fontSize = 10.sp
+                    )
+                }
+                if (ElderPerformance.isDeviceUnderFourGb(context)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Warning, null, tint = Color(0xFFFFC107), modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(7.dp))
+                        Text(
+                            "This device reports less than 4 GB RAM. Keep Minecraft at or below 1 GB.",
+                            color = Color(0xFFFFC107),
+                            fontSize = 10.sp
+                        )
+                    }
+                } else {
+                    Text(
+                        "Detected ${ElderPerformance.totalRamMb(context)} MB RAM. Low-End Mode is still recommended for stable frame times.",
+                        color = ElderMuted,
+                        fontSize = 10.sp
+                    )
+                }
+            }
+        }
         Card(colors = CardDefaults.cardColors(containerColor = ElderPanel), shape = RoundedCornerShape(12.dp)) {
             Column(modifier = Modifier.padding(15.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -691,14 +794,12 @@ private fun ToolsScreen(onOpenPojav: () -> Unit) {
                 Slider(
                     value = ram,
                     onValueChange = {
-                        ram = it
-                        LauncherPreferences.PREF_RAM_ALLOCATION = it.toInt()
-                        LauncherPreferences.DEFAULT_PREF.edit()
-                            .putInt("allocation", it.toInt())
-                            .apply()
+                        val selected = (it / 256f).roundToInt() * 256
+                        ram = selected.coerceIn(ElderPerformance.LOW_END_RAM_MB, maxRamMb).toFloat()
+                        ElderPerformance.saveRam(context, ram.toInt())
                     },
-                    valueRange = 1024f..maxRamMb.toFloat(),
-                    steps = ((maxRamMb - 1024) / 512).coerceAtLeast(0),
+                    valueRange = ElderPerformance.LOW_END_RAM_MB.toFloat()..maxRamMb.toFloat(),
+                    steps = 4,
                     colors = androidx.compose.material3.SliderDefaults.colors(
                         thumbColor = ElderGreen,
                         activeTrackColor = ElderGreen,
@@ -706,6 +807,76 @@ private fun ToolsScreen(onOpenPojav: () -> Unit) {
                     )
                 )
                 Text("The final cap is checked against available device RAM by Pojav before launch.", color = ElderMuted, fontSize = 10.sp)
+            }
+        }
+        Card(colors = CardDefaults.cardColors(containerColor = ElderPanel), shape = RoundedCornerShape(12.dp)) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Speed, null, tint = ElderGreen)
+                    Spacer(Modifier.width(10.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("FPS BOOST PRESET", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Fabric + Sodium + Lithium + Starlight", color = ElderMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = fpsBoost,
+                        onCheckedChange = {
+                            fpsBoost = it
+                            ElderPerformance.setFpsBoost(context, it)
+                            if (it) installMods()
+                        },
+                        colors = androidx.compose.material3.SwitchDefaults.colors(
+                            checkedThumbColor = ElderBlack,
+                            checkedTrackColor = ElderGreen
+                        )
+                    )
+                }
+                Button(
+                    onClick = {
+                        fpsBoost = true
+                        ElderPerformance.setFpsBoost(context, true)
+                        installMods()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !installingMods,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ElderGreen,
+                        contentColor = ElderBlack
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        if (installingMods) "INSTALLING MODS…" else "INSTALL RECOMMENDED MODS",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp
+                    )
+                }
+                Text("Best starting versions: Minecraft 1.16.5 and 1.12.2.", color = ElderMuted, fontSize = 10.sp)
+                modStatus?.let { Text(it, color = ElderGreen, fontSize = 10.sp) }
+            }
+        }
+        Card(colors = CardDefaults.cardColors(containerColor = ElderPanel), shape = RoundedCornerShape(12.dp)) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Text("RECOMMENDED MODS", color = ElderGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                ModrinthApi.recommendedMods().forEach { mod ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = mod.iconUrl,
+                            contentDescription = "${mod.name} icon",
+                            modifier = Modifier.size(28.dp).clip(RoundedCornerShape(6.dp))
+                        )
+                        Spacer(Modifier.width(9.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(mod.name, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("Fabric • ${mod.supportedVersions.joinToString(", ")}", color = ElderMuted, fontSize = 10.sp)
+                        }
+                        Icon(Icons.Default.CheckCircle, null, tint = ElderGreen, modifier = Modifier.size(17.dp))
+                    }
+                }
             }
         }
         ToolRow("TOUCH CONTROLS", "Edit buttons, gestures and layouts", Icons.Default.Gamepad, onOpenPojav)
@@ -717,12 +888,15 @@ private fun ToolsScreen(onOpenPojav: () -> Unit) {
                 Icon(Icons.Default.Gamepad, null, tint = ElderGreen)
                 Spacer(Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("TOUCH MODE", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    Text("Show touch controls while playing", color = ElderMuted, fontSize = 11.sp)
+                    Text("TOUCH PRESET", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text("Auto Hide + Small Buttons", color = ElderMuted, fontSize = 11.sp)
                 }
                 Switch(
-                    checked = touchMode,
-                    onCheckedChange = { touchMode = it },
+                    checked = touchPreset,
+                    onCheckedChange = {
+                        touchPreset = it
+                        ElderPerformance.enableTouchPreset(context, it)
+                    },
                     colors = androidx.compose.material3.SwitchDefaults.colors(
                         checkedThumbColor = ElderBlack,
                         checkedTrackColor = ElderGreen
@@ -753,7 +927,12 @@ private fun ToolRow(title: String, subtitle: String, icon: ImageVector, onClick:
 }
 
 @Composable
-private fun AccountScreen(onMicrosoftLogin: () -> Unit, onOfflineLogin: () -> Unit, onOpenAndroidSettings: () -> Unit) {
+private fun AccountScreen(
+    onMicrosoftLogin: () -> Unit,
+    onOfflineLogin: () -> Unit,
+    onSendFeedback: () -> Unit,
+    onOpenAndroidSettings: () -> Unit
+) {
     ScreenColumn {
         Header("ACCOUNT", "Choose how you enter Minecraft")
         Card(colors = CardDefaults.cardColors(containerColor = ElderPanel), shape = RoundedCornerShape(14.dp)) {
@@ -778,8 +957,9 @@ private fun AccountScreen(onMicrosoftLogin: () -> Unit, onOfflineLogin: () -> Un
                 ) { Text("OFFLINE LOGIN", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
             }
         }
+        ToolRow("SEND FEEDBACK", "Tell us what to improve in beta", Icons.Default.CloudDownload, onSendFeedback)
         ToolRow("APP PERMISSIONS", "Review storage and notification access", Icons.Default.Settings, onOpenAndroidSettings)
-        ToolRow("ABOUT ELDER LAUNCHER", "Pojav runtime foundation • v2.0", Icons.Default.Info) {}
+        ToolRow("ABOUT ELDER LAUNCHER", "Beta 0.1.0 • Pojav runtime foundation", Icons.Default.Info) {}
         Text(
             "Microsoft login is handled by Pojav's existing OAuth flow. Offline profiles are intended for local worlds and servers that allow them.",
             color = ElderMuted,

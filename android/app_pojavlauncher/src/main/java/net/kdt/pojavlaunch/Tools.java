@@ -52,6 +52,7 @@ import com.google.gson.GsonBuilder;
 import net.kdt.pojavlaunch.lifecycle.ContextExecutor;
 import net.kdt.pojavlaunch.lifecycle.ContextExecutorTask;
 import net.kdt.pojavlaunch.lifecycle.LifecycleAwareAlertDialog;
+import com.elder.launcher.ElderPerformance;
 import net.kdt.pojavlaunch.memory.MemoryHoleFinder;
 import net.kdt.pojavlaunch.memory.SelfMapsParser;
 import net.kdt.pojavlaunch.multirt.MultiRTUtils;
@@ -261,6 +262,9 @@ public final class Tools {
 
     public static void launchMinecraft(final AppCompatActivity activity, MinecraftAccount minecraftAccount,
                                        MinecraftProfile minecraftProfile, String versionId, int versionJavaRequirement) throws Throwable {
+        // Free reclaimable background memory before measuring the launch budget.
+        // Android may decline individual kills; this is intentionally best effort.
+        ElderPerformance.trimBackgroundApps(activity);
         int freeDeviceMemory = getFreeDeviceMemory(activity);
         int localeString;
         int freeAddressSpace = Architecture.is32BitsDevice() ? getMaxContinuousAddressSpaceSize() : -1;
@@ -286,6 +290,7 @@ public final class Tools {
         }
         LauncherProfiles.load();
         File gamedir = Tools.getGameDirPath(minecraftProfile);
+        ElderPerformance.applyGamePerformance(activity, gamedir);
         if(checkRenderDistance(gamedir)) {
             LifecycleAwareAlertDialog.DialogCreator dialogCreator = ((alertDialog, dialogBuilder) ->
                     dialogBuilder.setMessage(activity.getString(R.string.ltw_render_distance_warning_msg))

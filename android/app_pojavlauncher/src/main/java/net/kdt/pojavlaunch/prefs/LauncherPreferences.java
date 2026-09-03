@@ -67,6 +67,8 @@ public class LauncherPreferences {
     public static String PREF_DOWNLOAD_SOURCE = "default";
     public static boolean PREF_SKIP_NOTIFICATION_PERMISSION_CHECK = false;
     public static boolean PREF_VSYNC_IN_ZINK = true;
+    public static final int DEFAULT_RAM_ALLOCATION = 1024;
+    public static final int MAX_RAM_ALLOCATION = 2048;
 
 
     public static void loadPreferences(Context ctx) {
@@ -85,7 +87,8 @@ public class LauncherPreferences {
         PREF_CHECK_LIBRARY_SHA = DEFAULT_PREF.getBoolean("checkLibraries",true);
         PREF_DISABLE_GESTURES = DEFAULT_PREF.getBoolean("disableGestures",false);
         PREF_DISABLE_SWAP_HAND = DEFAULT_PREF.getBoolean("disableDoubleTap", false);
-        PREF_RAM_ALLOCATION = DEFAULT_PREF.getInt("allocation", findBestRAMAllocation(ctx));
+        PREF_RAM_ALLOCATION = Math.max(768, Math.min(MAX_RAM_ALLOCATION,
+                DEFAULT_PREF.getInt("allocation", DEFAULT_RAM_ALLOCATION)));
         PREF_CUSTOM_JAVA_ARGS = DEFAULT_PREF.getString("javaArgs", "");
         PREF_SUSTAINED_PERFORMANCE = DEFAULT_PREF.getBoolean("sustainedPerformance", isDevicePowerful);
         PREF_VIRTUAL_MOUSE_START = DEFAULT_PREF.getBoolean("mouse_start", false);
