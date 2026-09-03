@@ -152,9 +152,9 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // defaultConfig already set
-            // multiDexEnabled = true
-            // debuggable = true
+            // Beta builds are immediately installable with the bundled debug key.
+            // Replace this with a private release key before public distribution.
+            signingConfig signingConfigs.customDebug
             resValue 'string', 'storageProviderAuthorities', 'com.elder.launcher.scoped.gamefolder'
             resValue 'string', 'application_package', 'com.elder.launcher'
         }
@@ -215,8 +215,13 @@ android {
 }
 
 afterEvaluate {
-    // Explicit dependencies for which the apk relies on
-        tasks.mergeDebugAssets.dependsOn(":forge_installer:jar", ":arc_dns_injector:jar", ":JRE:jar")
+    // Explicit dependencies for which the APK relies on. Apply to every variant,
+    // not just debug, so assembleRelease also packages the upstream runtime jars.
+    tasks.configureEach { task ->
+        if (task.name.startsWith("merge") && task.name.endsWith("Assets")) {
+            task.dependsOn(":forge_installer:jar", ":arc_dns_injector:jar", ":JRE:jar")
+        }
+    }
 }
 
 dependencies {

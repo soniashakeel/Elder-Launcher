@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "WDBptD4M-lvRH5cnoFI6v"
+uri = "file://dist/ELDER_LAUNCHER_BETA_v0.1.0_android.zip"
+type = "unspecified"
+title = "ELDER LAUNCHER BETA 0.1.0 Android Studio Project"
+description = "Complete Android Studio source export with Gradle wrapper, R8 release configuration, included debug keystore, and BUILD_INSTRUCTIONS.md. The private upload signing key is excluded."
+logical_id = "27f94312-b23c-48e3-9ae8-07db41b3b6a3"
+content_hash = "sha256:f6e3aa9c2301ef59efec711db2b5836465e75f2ce0147e8f528e014cc2f4f2f9"
+size = 50169584
+mtime_ms = 1788453887276
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:b1c60d99-6c71-4715-b2fc-0ca0b2b56f22/27f94312-b23c-48e3-9ae8-07db41b3b6a3/48372450-9f5d-404d-93e0-4f94136eac33"
+storage_version_token = "1788453894246721"
+content_type = "application/octet-stream"
