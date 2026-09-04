@@ -145,8 +145,9 @@ object ElderPerformance {
     fun setFpsBoost(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_FPS_BOOST, enabled).apply()
         if (enabled) {
-            // FPS Boost uses the upstream renderer and loader-compatible profile
-            // while the recommended jars are fetched separately from Modrinth.
+            // FPS Boost uses the upstream renderer and loader-compatible profile.
+            // Fabric is installed by Pojav, and the recommended jars are fetched
+            // separately from Modrinth.
             LauncherPreferences.DEFAULT_PREF?.edit()
                 ?.putString("renderer", "opengles2")
                 ?.putBoolean("force_vsync", false)

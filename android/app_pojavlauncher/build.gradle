@@ -155,6 +155,9 @@ android {
             // Beta builds are immediately installable with the bundled debug key.
             // Replace this with a private release key before public distribution.
             signingConfig signingConfigs.customDebug
+            // defaultConfig already set
+            // multiDexEnabled = true
+            // debuggable = true
             resValue 'string', 'storageProviderAuthorities', 'com.elder.launcher.scoped.gamefolder'
             resValue 'string', 'application_package', 'com.elder.launcher'
         }
