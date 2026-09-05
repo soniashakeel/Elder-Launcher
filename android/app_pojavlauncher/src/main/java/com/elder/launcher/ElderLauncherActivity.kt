@@ -216,6 +216,7 @@ private fun ElderApp(
     val context = androidx.compose.ui.platform.LocalContext.current
     val database = remember { ElderDatabase.get(context) }
     val scope = rememberCoroutineScope()
+    var showAbout by rememberSaveable { mutableStateOf(false) }
     var instances by remember {
         mutableStateOf(
             listOf(
@@ -271,7 +272,17 @@ private fun ElderApp(
                     )
                     2 -> LibraryScreen(onOpenPojav)
                     3 -> ToolsScreen(onOpenPojav)
-                    else -> AccountScreen(onMicrosoftLogin, onOfflineLogin, onSendFeedback, onOpenAndroidSettings)
+                    else -> if (showAbout) {
+                        AboutScreen(onBack = { showAbout = false })
+                    } else {
+                        AccountScreen(
+                            onMicrosoftLogin = onMicrosoftLogin,
+                            onOfflineLogin = onOfflineLogin,
+                            onSendFeedback = onSendFeedback,
+                            onOpenAndroidSettings = onOpenAndroidSettings,
+                            onOpenAbout = { showAbout = true }
+                        )
+                    }
                 }
             }
             NavigationBar(
@@ -931,7 +942,8 @@ private fun AccountScreen(
     onMicrosoftLogin: () -> Unit,
     onOfflineLogin: () -> Unit,
     onSendFeedback: () -> Unit,
-    onOpenAndroidSettings: () -> Unit
+    onOpenAndroidSettings: () -> Unit,
+    onOpenAbout: () -> Unit
 ) {
     ScreenColumn {
         Header("ACCOUNT", "Choose how you enter Minecraft")
@@ -959,7 +971,7 @@ private fun AccountScreen(
         }
         ToolRow("SEND FEEDBACK", "Tell us what to improve in beta", Icons.Default.CloudDownload, onSendFeedback)
         ToolRow("APP PERMISSIONS", "Review storage and notification access", Icons.Default.Settings, onOpenAndroidSettings)
-        ToolRow("ABOUT ELDER LAUNCHER", "Beta 0.1.0 • Pojav runtime foundation", Icons.Default.Info) {}
+        ToolRow("ABOUT ELDER LAUNCHER", "Beta 0.1.0 • Pojav runtime foundation", Icons.Default.Info, onOpenAbout)
         Text(
             "Microsoft login is handled by Pojav's existing OAuth flow. Offline profiles are intended for local worlds and servers that allow them.",
             color = ElderMuted,
