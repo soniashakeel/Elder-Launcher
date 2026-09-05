@@ -23,17 +23,13 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Make gradlew executable
-      working-directory: android
-      run: chmod +x ./gradlew
-
     - name: Build Release APK
       working-directory: android
-      run: ./gradlew assembleRelease --stacktrace
+      run: bash gradlew assembleRelease --stacktrace
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ELDER-LAUNCHER-BETA-v0.1.0
-        path: android/app/build/outputs/apk/release/app-release.apk
+        path: android/app_pojavlauncher/build/outputs/apk/release/app_pojavlauncher-release.apk
         retention-days: 30
