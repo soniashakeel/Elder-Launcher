@@ -20,12 +20,17 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Install system dependencies
+      run: sudo apt-get update && sudo apt-get install -y lib32z1 lib32ncurses5 lib32bz2-1.0
+
     - name: Build Unsigned Release APK
       working-directory: android
       run: bash gradlew assembleRelease --stacktrace
 
-    - name: Upload APK Artifact
+    - name: Find and Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: ELDER-LAUNCHER-v0.1.0-UNSIGNED
-        path: android/app_pojavlauncher/build/outputs/apk/release/*.apk
+        path: android/app_pojavlauncher/build/outputs/apk/**/*.apk
+        if-no-files-found: error
+        retention-days: 30
