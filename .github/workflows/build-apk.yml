@@ -28,4 +28,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ELDER-LAUNCHER-v0.1.0-UNSIGNED
-        path: android/app_pojavlauncher/build/outputs/apk/release/*.apk
+        path: android/app_pojavlauncher/build/outputs/apk/release/*.apkp
