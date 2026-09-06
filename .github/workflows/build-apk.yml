@@ -1,4 +1,4 @@
-name: Build ELDER LAUNCHER Signed APK
+Build ELDER LAUNCHER Signed APK
 
 on:
   workflow_dispatch:
@@ -37,4 +37,4 @@ jobs:
         name: ELDER-LAUNCHER-v0.1.0-UNSIGNED
         path: android/app_pojavlauncher/build/outputs/apk/**/*.apk
         if-no-files-found: error
-        retention-days: 30
+        retention-days: 30 
