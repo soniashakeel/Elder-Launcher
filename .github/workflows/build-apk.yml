@@ -1,14 +1,11 @@
-name: Build ELDER LAUNCHER APK
+name: Build ELDER LAUNCHER Signed APK
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -23,13 +20,12 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Build Debug APK
+    - name: Build Unsigned Release APK
       working-directory: android
-      run: bash gradlew assembleDebug --stacktrace
+      run: bash gradlew assembleRelease --stacktrace
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ELDER-LAUNCHER-BETA-v0.1.0-DEBUG
-        path: android/app_pojavlauncher/build/outputs/apk/debug/app_pojavlauncher-debug.apk
-        retention-days: 30
+        name: ELDER-LAUNCHER-v0.1.0-UNSIGNED
+        path: android/app_pojavlauncher/build/outputs/apk/release/*.apk
