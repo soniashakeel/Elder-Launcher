@@ -23,9 +23,13 @@ jobs:
     - name: Install system dependencies
       run: sudo apt-get update && sudo apt-get install -y lib32z1 lib32ncurses5 lib32bz2-1.0
 
-    - name: Build Unsigned Release APK
+    - name: Make gradlew executable
       working-directory: android
-      run: bash gradlew assembleRelease --stacktrace
+      run: chmod +x gradlew
+
+    - name: Build All APKs
+      working-directory: android
+      run: bash gradlew assemble --stacktrace
 
     - name: Find and Upload APK Artifact
       uses: actions/upload-artifact@v4
