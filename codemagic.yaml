@@ -19,10 +19,9 @@ workflows:
       
       - name: Build APK
         script: |
+          export ANDROID_NDK_HOME=/Users/builder/Library/Android/sdk/ndk/26.3.11579264
           cd android
           ./gradlew assembleRelease --stacktrace
-        env:
-          ANDROID_NDK_HOME: /Users/builder/Library/Android/sdk/ndk/26.3.11579264
 
     artifacts:
       - android/app_pojavlauncher/build/outputs/apk/**/*.apk
