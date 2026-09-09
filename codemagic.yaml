@@ -1,0 +1,22 @@
+workflows:
+  android-release:
+    name: Build Elder Launcher
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      java: 17
+      android_sdk: 34
+      android_ndk: 26.3.11579264
+      groups:
+        - google_play
+    scripts:
+      - name: Set execute permission
+        script: chmod +x android/gradlew
+      - name: Build APK
+        script: cd android && ./gradlew assembleRelease
+    artifacts:
+      - android/app_pojavlauncher/build/outputs/apk/**/*.apk
+    publishing:
+      email:
+        recipients:
+          - soniashakeel@email.com # apna email
