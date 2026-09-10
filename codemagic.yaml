@@ -9,17 +9,21 @@ workflows:
         - google_play
     
     scripts:
-      - name: Install Android SDK 34 and NDK 26.3
+      - name: Install SDK and NDK
         script: |
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;26.3.11579264"
+          sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;26.3.11579264" "cmake;3.22.1"
           yes | sdkmanager --licenses
-      
+          
+      - name: Set NDK path for Gradle
+        script: |
+          echo "android.ndkVersion=26.3.11579264" >> android/local.properties
+          echo "android.ndkPath=/Users/builder/Library/Android/sdk/ndk/26.3.11579264" >> android/local.properties
+          
       - name: Set execute permission
         script: chmod +x android/gradlew
       
       - name: Build APK
         script: |
-          export ANDROID_NDK_HOME=/Users/builder/Library/Android/sdk/ndk/26.3.11579264
           cd android
           ./gradlew assembleRelease --stacktrace
 
@@ -29,4 +33,4 @@ workflows:
     publishing:
       email:
         recipients:
-          - soniashakeel1993@gmail.com # apna email daal do
+          - soniashakeel1993@gmail.com
