@@ -1,40 +1,39 @@
-Build ELDER LAUNCHER Signed APK
+name: Build Elder Launcher APK
 
 on:
+  push:
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-    - name: Install system dependencies
-      run: sudo apt-get update && sudo apt-get install -y lib32z1 lib32ncurses5 lib32bz2-1.0
+      - name: Install NDK 25.2.9519653
+        run: |
+          sdkmanager --install "ndk;25.2.9519653"
+          sdkmanager --install "platforms;android-34"
+          sdkmanager --install "build-tools;34.0.0"
 
-    - name: Make gradlew executable
-      working-directory: android
-      run: chmod +x gradlew
+      - name: Build Debug APK
+        working-directory: ./android
+        run: |
+          chmod +x gradlew
+          ./gradlew :MainApp:assembleDebug --stacktrace
 
-    - name: Build All APKs
-      working-directory: android
-      run: bash gradlew assemble --stacktrace
-
-    - name: Find and Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ELDER-LAUNCHER-v0.1.0-UNSIGNED
-        path: android/app_pojavlauncher/build/outputs/apk/**/*.apk
-        if-no-files-found: error
-        retention-days: 30 
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Elder-Launcher-APK
+          path: android/app_pojavlauncher/build/outputs/apk/debug/*.apk 
