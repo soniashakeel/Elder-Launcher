@@ -1,43 +1,30 @@
 name: Build Elder Launcher APK
-
 on:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
       - name: Install NDK
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0" "ndk;25.2.9519653"
+      - name: Fix strings.xml bug
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0" "ndk;25.2.9519653"
-
-      - name: Build APK - Debug Mode
+          FILE="android/app_pojavlauncher/src/main/res/values-vi/strings.xml"
+          sed -i 's/<string name="modpack_download_downloading_mods">/<string name="modpack_download_downloading_mods" formatted="false">/g' "$FILE"
+          sed -i 's/<string name="modpack_download_downloading_metadata">/<string name="modpack_download_downloading_metadata" formatted="false">/g' "$FILE"
+          sed -i 's/<string name="modpack_download_downloading_mods" formatted="false" formatted="false">/<string name="modpack_download_downloading_mods" formatted="false">/g' "$FILE"
+      - name: Build APK
         working-directory: ./android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
-          echo "---- Finding APKs ----"
-          find . -name "*.apk" -type f
-
-      - name: List outputs
-        if: always()
-        working-directory: ./android
-        run: |
-          ls -R app_pojavlauncher/build/outputs/ || true
-          ls -R MainApp/build/outputs/ || true
-
+          ./gradlew :MainApp:assembleDebug --no-daemon
       - name: Upload APK
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Elder-Launcher-APK
           path: android/**/build/outputs/apk/**/*.apk
-          if-no-files-found: warn
