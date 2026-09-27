@@ -15,21 +15,29 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install NDK and Platform 34
+      - name: Install NDK
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0" "ndk;25.2.9519653"
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list_installed
 
-      - name: Build APK
+      - name: Build APK - Debug Mode
         working-directory: ./android
         run: |
           chmod +x gradlew
-          ./gradlew :MainApp:assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace
+          echo "---- Finding APKs ----"
+          find . -name "*.apk" -type f
+
+      - name: List outputs
+        if: always()
+        working-directory: ./android
+        run: |
+          ls -R app_pojavlauncher/build/outputs/ || true
+          ls -R MainApp/build/outputs/ || true
 
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Elder-Launcher-APK
-          path: |
-            android/**/build/outputs/apk/debug/*.apk
-            android/**/build/outputs/apk/release/*.apk
+          path: android/**/build/outputs/apk/**/*.apk
+          if-no-files-found: warn
