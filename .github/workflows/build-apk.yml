@@ -14,32 +14,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install NDK & SDK
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0" "ndk;25.2.9519653"
-
-      - name: Auto-Fix Vietnamese strings.xml
+      - name: Install NDK
         run: |
-          python3 -c "
-          import re, glob
-          files = glob.glob('android/app_pojavlauncher/src/main/res/values-*/strings.xml')
-          for path in files:
-              with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-                  c = f.read()
-              # Fix any string with 2x %s without positional args
-              def repl(m):
-                  tag, name, body = m.group(0), m.group(1), m.group(2)
-                  if 'formatted=' in tag: return tag
-                  if '%1\$' in body: return tag
-                  if body.count('%') >= 2:
-                      return tag.replace(f'name=\"{name}\"', f'name=\"{name}\" formatted=\"false\"')
-                  return tag
-              new_c = re.sub(r'<string name=\"([^\"]+)\">([^<]*%[^<]*%[^<]*)</string>', repl, c)
-              if new_c != c:
-                  open(path, 'w', encoding='utf-8').write(new_c)
-                  print(f'Fixed {path}')
-          "
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0" "ndk;25.2.9519653"
 
-      - name: Build APK
+      - name: Delete broken translation
+        run: |
+          rm -rf android/app_pojavlauncher/src/main/res/values-vi
+          echo "Deleted broken vi folder"
+
+      - name: Build Debug APK
         working-directory: ./android
         run: |
           chmod +x gradlew
@@ -48,5 +32,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Elder-Launcher-APK
+          name: Elder-Launcher-Debug-APK
           path: android/**/build/outputs/apk/**/*.apk
