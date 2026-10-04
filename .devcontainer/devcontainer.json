@@ -1,0 +1,11 @@
+{
+  "name": "Elder Launcher Dev",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": { "version": "17" },
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/android-sdk:1": { "version": "latest" }
+  },
+  "forwardPorts": [3000, 5000],
+  "postCreateCommand": "npm install -g pnpm && pnpm install"
+}
